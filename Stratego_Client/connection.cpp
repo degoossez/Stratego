@@ -1,11 +1,5 @@
 #include "connection.h"
-#include <QTcpSocket>
-#include <QUdpSocket>
-#include <QHostInfo>
-#include <cstdio>
-#include <QHostAddress>
-#include <QNetworkInterface>
-#include <QNetworkAddressEntry>
+
 
 #define udpgetport 6666
 
@@ -13,8 +7,16 @@ connection::connection(QObject *parent) :
     QObject(parent)
 {
     socket = new QTcpSocket(this);
+    connect(socket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(printError(QAbstractSocket::SocketError)));
     connect(socket, SIGNAL(connected()), this, SLOT(on_connected()));
+    connect(socket,SIGNAL(disconnected()), this, SLOT(on_disconnected()));
+    connect(socket,SIGNAL(readyRead()),this,SLOT(incommingData()));
 }
+void connection::printError(QAbstractSocket::SocketError Error)
+{
+    qDebug() << Error;
+}
+
 QString connection::Broadcast() {
     // Om ip adressen te ontdekken
     QNetworkAddressEntry inter;
@@ -67,15 +69,27 @@ void connection::connectToServer(){
     //socket->connectToHost("fenrig-N73SV", 666);
     //socket->connectToHost("192.168.10.124", 666);
     socket->connectToHost(Broadcast(), 41000);
-
 }
 void connection::on_connected(){
     //----------
-    printf("[INFO] Authenticating to CAR-SERVER\n");
+    qDebug("[INFO] Authenticating to CAR-SERVER\n");
     // char auth_buffer[13] = "car_v1      ";
-    char auth_buffer[13] = "car_v2      ";
+    /*char auth_buffer[13] = "car_v2      ";
     socket->write(auth_buffer);
-    socket->flush();
+    socket->flush(); */
+    ableToWrite = true;
     //----------
     //hier een bool zetten op 1 endan checken of deze op 1 staat om de andere toegang te geven tot schrijven op socket
+}
+void connection::on_disconnected(){
+    printf("[ERROR] Disconnected with TCP Server\n");
+    ableToWrite = false;
+}
+void connection::incommingData(){
+    QString input = socket->readLine();
+    if(input == "START")
+    {
+        gameStatus=true;
+        emit playfieldChanged(spelveld);
+    }
 }

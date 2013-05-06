@@ -14,9 +14,11 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    connection.cpp
+    connection.cpp \
+    mygraphicsscene.cpp
 
 HEADERS  += mainwindow.h \
-    connection.h
+    connection.h \
+    mygraphicsscene.h
 
 FORMS    += mainwindow.ui

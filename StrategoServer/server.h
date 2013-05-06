@@ -11,6 +11,7 @@
 #include <QNetworkInterface>
 #include <QNetworkAddressEntry>
 #include <QList>
+#include <QSignalMapper>
 class QTcpSocket;
 //! [0]
 class Server : public QObject
@@ -19,15 +20,15 @@ class Server : public QObject
 
 public:
     Server(QObject *parent = 0);
-    void CreateTcp(int);
     int spelers,spel;
     QTcpServer *server;
     QList<QTcpSocket*> socketList;
     QList<int> spelList;
-
+    QSignalMapper *signalMapper;
 public slots:
-    void processGameData();
+    void processGameData(int spelerId);
     void processPendingDatagrams();
+    void CreateTcp();
 private:
     QUdpSocket *udpSocket;
     QTcpSocket *tcpSocket;

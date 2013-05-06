@@ -5,7 +5,7 @@ Server::Server(QObject *parent) :
     QObject(parent)
 {
     server = new QTcpServer(this);
-    //connect(server,SIGNAL(newConnection()),this,SLOT(ConnectClients()));
+    connect(server,SIGNAL(newConnection()),this,SLOT(CreateTcp()));
     if(!server->listen(QHostAddress::Any,41000))
     {
         qDebug() <<"SERVER COULD NOT BE STARTED\n";
@@ -20,12 +20,12 @@ Server::Server(QObject *parent) :
     spel=1;
     connect(udpSocket, SIGNAL(readyRead()),this, SLOT(processPendingDatagrams()));
 
-    tcpSocket = new QTcpSocket(this);
+    signalMapper = new QSignalMapper(this);
+    connect(signalMapper,SIGNAL(mapped(int)),this,SLOT(processGameData(int)));
+
+    /*tcpSocket = new QTcpSocket(this);
     tcpSocket->bind(41000, QTcpSocket::ShareAddress);
-    connect(tcpSocket, SIGNAL(readyRead()),this,SLOT(processGameData()));
-}
-void Server::processGameData() {
-    qDebug() << "HALLO";
+    connect(tcpSocket, SIGNAL(readyRead()),this,SLOT(processGameData())); */
 }
 void Server::processPendingDatagrams()
 {
@@ -47,25 +47,47 @@ void Server::processPendingDatagrams()
                 //game nummer
                 send_datagram = (QString::number(spel)).toUtf8();
                 udpSocket->writeDatagram(send_datagram,SenderAdress,6666);
-                spelers++;
-                CreateTcp(spel);
+                //CreateTcp(spel);
             }
         }
         else
         {
             QByteArray send_datagram = "SERVER-IS-FULL";
             udpSocket->writeDatagram(send_datagram,SenderAdress,6666);
-            spelers=1;
-            spel++;
         }
         qDebug() << SenderAdress;
 
     }
 }
-void Server::CreateTcp(int spel)
+void Server::CreateTcp()
 {
-    QTcpSocket *tcpsock = new QTcpSocket();
+    qDebug() << "CreateTcp";
+    int spelerId;
+    if(spelers==1)
+    {
+        spelerId = ((spelers + 1) * spel) - 2;
+        qDebug() << "spelerId:" << spelerId;
+        spelers++;
+    }
+    else if(spelers==2)
+    {
+        spelerId = (spelers * spel) -1;
+        qDebug() << "spelerId2:" << spelerId;
+        spelers=1;
+        spel++;
+    }
+    QTcpSocket *tcpsock;
     tcpsock = server->nextPendingConnection();
+    //tcpsock->waitForReadyRead(5000);
+    signalMapper->setMapping(tcpsock, spelerId);
+    connect(tcpsock, SIGNAL(readyRead()),signalMapper,SLOT(map()));
+    //tcpsock->waitForBytesWritten(3000);
+    //qDebug() << tcpsock->readAll();
+    //tcpsock->write("");
     socketList.append(tcpsock);
     spelList.append(spel);
+    qDebug() << "CreateTcp2";
+}
+void Server::processGameData(int spelerId) {
+    qDebug() << "DATA: " << socketList.at(0)->readAll();
 }
