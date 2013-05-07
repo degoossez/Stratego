@@ -61,20 +61,16 @@ void Server::processPendingDatagrams()
 }
 void Server::CreateTcp()
 {
-    qDebug() << "CreateTcp";
     int spelerId;
     if(spelers==1)
     {
         spelerId = ((spelers + 1) * spel) - 2;
         qDebug() << "spelerId:" << spelerId;
-        spelers++;
     }
     else if(spelers==2)
     {
         spelerId = (spelers * spel) -1;
         qDebug() << "spelerId2:" << spelerId;
-        spelers=1;
-        spel++;
     }
     QTcpSocket *tcpsock;
     tcpsock = server->nextPendingConnection();
@@ -86,8 +82,29 @@ void Server::CreateTcp()
     //tcpsock->write("");
     socketList.append(tcpsock);
     spelList.append(spel);
-    qDebug() << "CreateTcp2";
+    if(spelers==1)
+    {
+        spelers++;
+    }
+    else if(spelers==2)
+    {
+        write_data(new QByteArray("START"));
+        spelers=1;
+        spel++;
+    }
 }
 void Server::processGameData(int spelerId) {
     qDebug() << "DATA: " << socketList.at(0)->readAll();
+}
+void Server::write_data(QByteArray *buffer){
+    qDebug() << "sending";
+    for(int i=0;i<spelList.length();i++)
+    {
+        if(spelList.at(i)==spel)
+        {
+        buffer->rightJustified(56,' ',true);
+        socketList.at(i)->write(*buffer);
+        socketList.at(i)->flush();
+        }
+    }
 }

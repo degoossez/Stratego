@@ -29,7 +29,7 @@ private slots:
     void printError(QAbstractSocket::SocketError);
     void incommingData();
 signals:
-    void playfieldChanged(int[9][9]);
+    void playfieldChanged(int[][9]);
 private:
     QString Broadcast();
     

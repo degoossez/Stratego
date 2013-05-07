@@ -45,7 +45,7 @@ public:
     QGraphicsView *view;
     MyGraphicsScene *scene;
     double posx,posy;
-    int x,y;
+    int x,y,type;
     int Bom,Maarschalk,Generaal,Kolonel,Majoor,Kapitein,Luitenant,Sergeant,Mineur,Verkenner,Spion,Vaandel;
     connection *c;
 private:
@@ -65,8 +65,8 @@ private slots:
     void drawVerkenner();
     void drawSpion();
     void drawVaandel();
-    void redrawField(int[9][9]);
-    void draw(int type);
+    void redrawField(int[][9]);
+    void draw();
 
 };
 

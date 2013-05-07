@@ -69,6 +69,7 @@ void connection::connectToServer(){
     //socket->connectToHost("fenrig-N73SV", 666);
     //socket->connectToHost("192.168.10.124", 666);
     socket->connectToHost(Broadcast(), 41000);
+    qDebug("Connected!");
 }
 void connection::on_connected(){
     //----------
@@ -89,6 +90,7 @@ void connection::incommingData(){
     QString input = socket->readLine();
     if(input == "START")
     {
+        qDebug() << "incomming data: START";
         gameStatus=true;
         emit playfieldChanged(spelveld);
     }

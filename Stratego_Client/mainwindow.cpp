@@ -35,7 +35,7 @@ MainWindow::~MainWindow()
 void MainWindow::Play() {
     c = new connection(this);
     c->connectToServer();
-    //connect(c,SIGNAL(playfieldChanged(int[][])),this,SLOT(redrawField(int[][])));
+    connect(c,SIGNAL(playfieldChanged(int[][9])),this,SLOT(redrawField(int[][9])));
     for(int i=0;i<10;i++)
     {
         if(i<5)
@@ -189,200 +189,129 @@ void MainWindow::drawBom()
 {
     Bom--;
     c->spelveld[int(posx)][int(posy)] = 11;
-    posx = posx*58;
-    posy = posy*58;
-    QPixmap pixmap = QPixmap::fromImage(QImage("/home/dries/School/computernetwerken/StrategoGame/Stratego_Client/11.jpg"));
-    QGraphicsPixmapItem *item =new QGraphicsPixmapItem(pixmap);
-    item->setScale(2.5);
-    item->setPixmap(pixmap);
-    item->setPos(posx,posy);
-    scene->addItem(item);
-    view->setScene(scene);
-    view->update();
+    x=posx;
+    y=posy;
+    type=11;
+    draw();
 }
 void MainWindow::drawMaarschalk()
 {
     Maarschalk--;
     c->spelveld[int(posx)][int(posy)] = 10;
-    posx = posx*58;
-    posy = posy*58;
-    QPixmap pixmap = QPixmap::fromImage(QImage("/home/dries/School/computernetwerken/StrategoGame/Stratego_Client/10.jpg"));
-    QGraphicsPixmapItem *item =new QGraphicsPixmapItem(pixmap);
-    item->setScale(2.5);
-    item->setPixmap(pixmap);
-    item->setPos(posx,posy);
-    scene->addItem(item);
-    view->setScene(scene);
-    view->update();
-}
-void MainWindow::drawKolonel()
-{
-    Kolonel--;
-    c->spelveld[int(posx)][int(posy)] = 9;
-    posx = posx*58;
-    posy = posy*58;
-    QPixmap pixmap = QPixmap::fromImage(QImage("/home/dries/School/computernetwerken/StrategoGame/Stratego_Client/9.jpg"));
-    QGraphicsPixmapItem *item =new QGraphicsPixmapItem(pixmap);
-    item->setScale(2.5);
-    item->setPixmap(pixmap);
-    item->setPos(posx,posy);
-    scene->addItem(item);
-    view->setScene(scene);
-    view->update();
+    x=posx;
+    y=posy;
+    type=10;
+    draw();
 }
 void MainWindow::drawGeneraal()
 {
     Generaal--;
+    c->spelveld[int(posx)][int(posy)] = 9;
+    x=posx;
+    y=posy;
+    type=8;
+    draw();
+}
+void MainWindow::drawKolonel()
+{
+    Kolonel--;
     c->spelveld[int(posx)][int(posy)] = 8;
-    posx = posx*58;
-    posy = posy*58;
-    QPixmap pixmap = QPixmap::fromImage(QImage("/home/dries/School/computernetwerken/StrategoGame/Stratego_Client/8.jpg"));
-    QGraphicsPixmapItem *item =new QGraphicsPixmapItem(pixmap);
-    item->setScale(2.5);
-    item->setPixmap(pixmap);
-    item->setPos(posx,posy);
-    scene->addItem(item);
-    view->setScene(scene);
-    view->update();
+    x=posx;
+    y=posy;
+    type=9;
+    draw();
 }
 void MainWindow::drawMajoor()
 {
     Majoor--;
     c->spelveld[int(posx)][int(posy)] = 7;
-    posx = posx*58;
-    posy = posy*58;
-    QPixmap pixmap = QPixmap::fromImage(QImage("/home/dries/School/computernetwerken/StrategoGame/Stratego_Client/7.jpg"));
-    QGraphicsPixmapItem *item =new QGraphicsPixmapItem(pixmap);
-    item->setScale(2.5);
-    item->setPixmap(pixmap);
-    item->setPos(posx,posy);
-    scene->addItem(item);
-    view->setScene(scene);
-    view->update();
+    x=posx;
+    y=posy;
+    type=7;
+    draw();
 }
 void MainWindow::drawKapitein()
 {
     Kapitein--;
     c->spelveld[int(posx)][int(posy)] = 6;
-    posx = posx*58;
-    posy = posy*58;
-    QPixmap pixmap = QPixmap::fromImage(QImage("/home/dries/School/computernetwerken/StrategoGame/Stratego_Client/6.jpg"));
-    QGraphicsPixmapItem *item =new QGraphicsPixmapItem(pixmap);
-    item->setScale(2.5);
-    item->setPixmap(pixmap);
-    item->setPos(posx,posy);
-    scene->addItem(item);
-    view->setScene(scene);
-    view->update();
+    x=posx;
+    y=posy;
+    type=6;
+    draw();
 }
 void MainWindow::drawLuitenant()
 {
     Luitenant--;
     c->spelveld[int(posx)][int(posy)] = 5;
-    posx = posx*58;
-    posy = posy*58;
-    QPixmap pixmap = QPixmap::fromImage(QImage("/home/dries/School/computernetwerken/StrategoGame/Stratego_Client/5.jpg"));
-    QGraphicsPixmapItem *item =new QGraphicsPixmapItem(pixmap);
-    item->setScale(2.5);
-    item->setPixmap(pixmap);
-    item->setPos(posx,posy);
-    scene->addItem(item);
-    view->setScene(scene);
-    view->update();
+    x=posx;
+    y=posy;
+    type=5;
+    draw();
 }
 void MainWindow::drawSergeant()
 {
     Sergeant--;
     c->spelveld[int(posx)][int(posy)] = 4;
-    posx = posx*58;
-    posy = posy*58;
-    QPixmap pixmap = QPixmap::fromImage(QImage("/home/dries/School/computernetwerken/StrategoGame/Stratego_Client/4.jpg"));
-    QGraphicsPixmapItem *item =new QGraphicsPixmapItem(pixmap);
-    item->setScale(2.5);
-    item->setPixmap(pixmap);
-    item->setPos(posx,posy);
-    scene->addItem(item);
-    view->setScene(scene);
-    view->update();
+    x=posx;
+    y=posy;
+    type=4;
+    draw();
 }
 void MainWindow::drawMineur()
 {
     Mineur--;
     c->spelveld[int(posx)][int(posy)] = 3;
-    posx = posx*58;
-    posy = posy*58;
-    QPixmap pixmap = QPixmap::fromImage(QImage("/home/dries/School/computernetwerken/StrategoGame/Stratego_Client/3.jpg"));
-    QGraphicsPixmapItem *item =new QGraphicsPixmapItem(pixmap);
-    item->setScale(2.5);
-    item->setPixmap(pixmap);
-    item->setPos(posx,posy);
-    scene->addItem(item);
-    view->setScene(scene);
-    view->update();
+    x=posx;
+    y=posy;
+    type=3;
+    draw();
 }
 void MainWindow::drawVerkenner()
 {
     Verkenner--;
     c->spelveld[int(posx)][int(posy)] = 2;
-    posx = posx*58;
-    posy = posy*58;
-    QPixmap pixmap = QPixmap::fromImage(QImage("/home/dries/School/computernetwerken/StrategoGame/Stratego_Client/2.jpg"));
-    QGraphicsPixmapItem *item =new QGraphicsPixmapItem(pixmap);
-    item->setScale(2.5);
-    item->setPixmap(pixmap);
-    item->setPos(posx,posy);
-    scene->addItem(item);
-    view->setScene(scene);
-    view->update();
+    x=posx;
+    y=posy;
+    type=2;
+    draw();
 }
 void MainWindow::drawSpion()
 {
     Spion--;
     c->spelveld[int(posx)][int(posy)] = 1;
-    posx = posx*58;
-    posy = posy*58;
-    QPixmap pixmap = QPixmap::fromImage(QImage("/home/dries/School/computernetwerken/StrategoGame/Stratego_Client/1.jpg"));
-    QGraphicsPixmapItem *item =new QGraphicsPixmapItem(pixmap);
-    item->setScale(2.5);
-    item->setPixmap(pixmap);
-    item->setPos(posx,posy);
-    scene->addItem(item);
-    view->setScene(scene);
-    view->update();
+    x=posx;
+    y=posy;
+    type=1;
+    draw();
 }
 void MainWindow::drawVaandel()
 {
     Vaandel--;
     c->spelveld[int(posx)][int(posy)] = 0;
-    posx = posx*58;
-    posy = posy*58;
-    QPixmap pixmap = QPixmap::fromImage(QImage("/home/dries/School/computernetwerken/StrategoGame/Stratego_Client/0.jpg"));
-    QGraphicsPixmapItem *item =new QGraphicsPixmapItem(pixmap);
-    item->setScale(2.5);
-    item->setPixmap(pixmap);
-    item->setPos(posx,posy);
-    scene->addItem(item);
-    view->setScene(scene);
-    view->update();
+    x=posx;
+    y=posy;
+    type=0;
+    draw();
 }
 void MainWindow::redrawField(int spelveld[9][9])
 {
     for(x=0;x<10;x++)
     {
-        for(x=0;x<10;x++)
+        for(y=0;y<10;y++)
         {
-            int type = spelveld[x][y];
-            draw(type);
+            qDebug("in lus");
+            type = spelveld[x][y];
+            draw();
         }
     }
 }
-void MainWindow::draw(int type)
+void MainWindow::draw()
 {
     if(type!=15)
     {
         x = x*58;
         y = y*58;
-        QPixmap pixmap = QPixmap::fromImage(QImage("/home/dries/School/computernetwerken/StrategoGame/Stratego_Client/"<< type << ".jpg"));
+        QPixmap pixmap = QPixmap::fromImage(QImage("/home/dries/School/computernetwerken/StrategoGame/Stratego_Client/" + QString::number(type) + ".jpg"));
         QGraphicsPixmapItem *item =new QGraphicsPixmapItem(pixmap);
         item->setScale(2.5);
         item->setPixmap(pixmap);

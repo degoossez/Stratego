@@ -29,6 +29,7 @@ public slots:
     void processGameData(int spelerId);
     void processPendingDatagrams();
     void CreateTcp();
+    void write_data(QByteArray *buffer);
 private:
     QUdpSocket *udpSocket;
     QTcpSocket *tcpSocket;
