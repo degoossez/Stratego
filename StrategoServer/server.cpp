@@ -82,29 +82,45 @@ void Server::CreateTcp()
     //tcpsock->write("");
     socketList.append(tcpsock);
     spelList.append(spel);
+    toestandList.append(false);
     if(spelers==1)
     {
         spelers++;
     }
     else if(spelers==2)
     {
-        write_data(new QByteArray("START"));
+        qDebug("Spel start!");
+        //write_data(new QByteArray("START"));
         spelers=1;
         spel++;
     }
 }
 void Server::processGameData(int spelerId) {
-    qDebug() << "DATA: " << socketList.at(0)->readAll();
-}
-void Server::write_data(QByteArray *buffer){
-    qDebug() << "sending";
-    for(int i=0;i<spelList.length();i++)
+    //qDebug() << "DATA: " << socketList.at(spelerId)->readAll();
+    if(socketList.at(spelerId)->readAll()=="START")
     {
-        if(spelList.at(i)==spel)
+        toestandList[spelerId] = true;
+        if(spelerId%2==0)
         {
-        buffer->rightJustified(56,' ',true);
-        socketList.at(i)->write(*buffer);
-        socketList.at(i)->flush();
+            if(toestandList.at(spelerId+1)==true)
+            {
+                write_data(new QByteArray("START"),spelerId);
+                write_data(new QByteArray("START"),spelerId+1);
+            }
+        }
+        else
+        {
+            if(toestandList.at(spelerId-1)==true)
+            {
+                write_data(new QByteArray("START"),spelerId);
+                write_data(new QByteArray("START"),spelerId-1);
+            }
         }
     }
+}
+void Server::write_data(QByteArray *buffer, int spelerId){
+    qDebug() << "sending";
+        buffer->rightJustified(56,' ',true);
+        socketList.at(spelerId)->write(*buffer);
+        socketList.at(spelerId)->flush();
 }

@@ -24,12 +24,13 @@ public:
     QTcpServer *server;
     QList<QTcpSocket*> socketList;
     QList<int> spelList;
+    QList<bool> toestandList;
     QSignalMapper *signalMapper;
 public slots:
     void processGameData(int spelerId);
     void processPendingDatagrams();
     void CreateTcp();
-    void write_data(QByteArray *buffer);
+    void write_data(QByteArray *buffer,int spelerId);
 private:
     QUdpSocket *udpSocket;
     QTcpSocket *tcpSocket;

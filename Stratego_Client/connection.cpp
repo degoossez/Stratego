@@ -11,6 +11,7 @@ connection::connection(QObject *parent) :
     connect(socket, SIGNAL(connected()), this, SLOT(on_connected()));
     connect(socket,SIGNAL(disconnected()), this, SLOT(on_disconnected()));
     connect(socket,SIGNAL(readyRead()),this,SLOT(incommingData()));
+
 }
 void connection::printError(QAbstractSocket::SocketError Error)
 {
@@ -92,6 +93,6 @@ void connection::incommingData(){
     {
         qDebug() << "incomming data: START";
         gameStatus=true;
-        emit playfieldChanged(spelveld);
+        emit playfieldChanged();
     }
 }

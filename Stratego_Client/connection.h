@@ -17,22 +17,22 @@ class connection : public QObject
 public:
     explicit connection(QObject *parent = 0);
     void connectToServer();
-    void write_data(QByteArray *buffer);
     int speler,spel;
     QTcpSocket* socket;
     bool ableToWrite,gameStatus;
-    int spelveld[9][9];
+    int spelveld[10][10];
 public slots:
 private slots:
     void on_connected();
     void on_disconnected();
     void printError(QAbstractSocket::SocketError);
     void incommingData();
+    void write_data(QByteArray *buffer);
 signals:
-    void playfieldChanged(int[][9]);
+    void playfieldChanged();
 private:
     QString Broadcast();
-    
+
 };
 
 #endif // CONNECT_H

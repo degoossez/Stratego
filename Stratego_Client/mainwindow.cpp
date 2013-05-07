@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
     scene->addItem(item);
     QMenuBar *bar = new QMenuBar(view);
     connect(bar->addMenu("Start")->addAction("Connection"),SIGNAL(triggered()),this,SLOT(Play()));
+    connect(bar->addMenu("Game")->addAction("Start"),SIGNAL(triggered()),this,SLOT(Start()));
     view->setWindowTitle("Stratego");
     view->setScene(scene);
     view->setMinimumSize(650,650);
@@ -35,24 +36,23 @@ MainWindow::~MainWindow()
 void MainWindow::Play() {
     c = new connection(this);
     c->connectToServer();
-    connect(c,SIGNAL(playfieldChanged(int[][9])),this,SLOT(redrawField(int[][9])));
     for(int i=0;i<10;i++)
     {
-        if(i<5)
+        for(int j=0;j<10;j++)
         {
-            for(int j=0;j<10;j++)
+            if(j<4)
             {
                 c->spelveld[i][j]=20;
             }
-        }
-        else
-        {
-            for(int j=0;j<10;j++)
+            else
             {
                 c->spelveld[i][j]=15;
             }
         }
     }
+    //c->spelveld[8][8]=10;
+    connect(c,SIGNAL(playfieldChanged()),this,SLOT(redrawField()));
+    connect(this,SIGNAL(send(QByteArray*)),c,SLOT(write_data(QByteArray*)));
     Bom=6;
     Maarschalk=1;
     Generaal=1;
@@ -293,14 +293,14 @@ void MainWindow::drawVaandel()
     type=0;
     draw();
 }
-void MainWindow::redrawField(int spelveld[9][9])
+void MainWindow::redrawField()
 {
+    qDebug("Redrawfield");
     for(x=0;x<10;x++)
     {
         for(y=0;y<10;y++)
         {
-            qDebug("in lus");
-            type = spelveld[x][y];
+            type = c->spelveld[x][y];
             draw();
         }
     }
@@ -309,15 +309,25 @@ void MainWindow::draw()
 {
     if(type!=15)
     {
-        x = x*58;
-        y = y*58;
+        int xpos = x*58;
+        int ypos = y*58;
         QPixmap pixmap = QPixmap::fromImage(QImage("/home/dries/School/computernetwerken/StrategoGame/Stratego_Client/" + QString::number(type) + ".jpg"));
         QGraphicsPixmapItem *item =new QGraphicsPixmapItem(pixmap);
         item->setScale(2.5);
         item->setPixmap(pixmap);
-        item->setPos(x,y);
+        item->setPos(xpos,ypos);
         scene->addItem(item);
         view->setScene(scene);
         view->update();
     }
+}
+void MainWindow::Start()
+{
+    qDebug("Game Started");
+    if(play == 0 && Bom==0 && Maarschalk==0 && Generaal==0 && Kolonel==0 && Majoor==0 && Kapitein==0 && Luitenant==0 && Sergeant==0 && Mineur==0 && Verkenner==0 && Spion==0 && Vaandel==0)
+    {
+        play = 1;
+        emit send(new QByteArray("START"));
+    }
+    emit send(new QByteArray("START"));
 }

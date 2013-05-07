@@ -46,6 +46,7 @@ public:
     MyGraphicsScene *scene;
     double posx,posy;
     int x,y,type;
+    int play=0;
     int Bom,Maarschalk,Generaal,Kolonel,Majoor,Kapitein,Luitenant,Sergeant,Mineur,Verkenner,Spion,Vaandel;
     connection *c;
 private:
@@ -65,9 +66,11 @@ private slots:
     void drawVerkenner();
     void drawSpion();
     void drawVaandel();
-    void redrawField(int[][9]);
+    void redrawField();
     void draw();
-
+    void Start();
+signals:
+    void send(QByteArray *buffer);
 };
 
 #endif // MAINWINDOW_H
