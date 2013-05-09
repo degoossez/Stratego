@@ -89,15 +89,15 @@ void Server::CreateTcp()
     }
     else if(spelers==2)
     {
-        qDebug("Spel start!");
-        //write_data(new QByteArray("START"));
         spelers=1;
         spel++;
     }
 }
 void Server::processGameData(int spelerId) {
-    //qDebug() << "DATA: " << socketList.at(spelerId)->readAll();
-    if(socketList.at(spelerId)->readAll()=="START")
+    qDebug() << "Processing game data:";
+    QString input = socketList.at(spelerId)->readAll();
+    qDebug() << input;
+    if(input=="START")
     {
         toestandList[spelerId] = true;
         if(spelerId%2==0)
@@ -116,6 +116,33 @@ void Server::processGameData(int spelerId) {
                 write_data(new QByteArray("START"),spelerId-1);
             }
         }
+    }
+    if(input=="STOP")
+    {
+        toestandList[spelerId] = false;
+        socketList.at(spelerId)->close();
+        if(spelerId%2==0)
+        {
+            toestandList[spelerId+1]=false;
+            write_data(new QByteArray("STOP"),spelerId+1);
+            socketList.at(spelerId+1)->close();
+        }
+        else
+        {
+            toestandList[spelerId-1]=false;
+            write_data(new QByteArray("STOP"),spelerId-1);
+            socketList.at(spelerId-1)->close();
+        }
+
+    }
+    QStringList list = input.split("/");
+    if(list.at(0)=="FROM")
+    {
+        //ask oponent for pown
+    }
+    else(list.at()=="TO")
+    {
+
     }
 }
 void Server::write_data(QByteArray *buffer, int spelerId){

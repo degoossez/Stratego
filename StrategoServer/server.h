@@ -12,6 +12,7 @@
 #include <QNetworkAddressEntry>
 #include <QList>
 #include <QSignalMapper>
+#include <QStringList>
 class QTcpSocket;
 //! [0]
 class Server : public QObject

@@ -48,12 +48,14 @@ public:
     int x,y,type;
     int play=0;
     int Bom,Maarschalk,Generaal,Kolonel,Majoor,Kapitein,Luitenant,Sergeant,Mineur,Verkenner,Spion,Vaandel;
+    int from=true;
     connection *c;
 private:
     Ui::MainWindow *ui;
 private slots:
     void Play();
     void addPown(double,double);
+    void pownClicked(double,double);
     void drawBom();
     void drawMaarschalk();
     void drawGeneraal();
@@ -69,6 +71,7 @@ private slots:
     void redrawField();
     void draw();
     void Start();
+    void Stop();
 signals:
     void send(QByteArray *buffer);
 };

@@ -9,6 +9,9 @@
 #include <QHostAddress>
 #include <QNetworkInterface>
 #include <QNetworkAddressEntry>
+#include <QDialog>
+#include <QVBoxLayout>
+#include <QLabel>
 class QTcpSocket;
 
 class connection : public QObject

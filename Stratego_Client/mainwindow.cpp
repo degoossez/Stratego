@@ -10,7 +10,7 @@ MainWindow::MainWindow(QWidget *parent) :
     layout = new QVBoxLayout(this->centralWidget());
     view = new QGraphicsView(this);
     scene = new MyGraphicsScene(view);
-    connect(scene,SIGNAL(mouseclicked(double,double)),this,SLOT(addPown(double,double)));
+    connect(scene,SIGNAL(mouseclicked(double,double)),this,SLOT(pownClicked(double,double)));
     QPixmap pixmap = QPixmap::fromImage(QImage("/home/dries/School/computernetwerken/StrategoGame/Stratego_Client/Classicboard.jpg"));
     QGraphicsPixmapItem *item =new QGraphicsPixmapItem(pixmap);
     item->setPixmap(pixmap);
@@ -21,8 +21,9 @@ MainWindow::MainWindow(QWidget *parent) :
     itemElipse->setBrush(Qt::yellow);*/
     scene->addItem(item);
     QMenuBar *bar = new QMenuBar(view);
-    connect(bar->addMenu("Start")->addAction("Connection"),SIGNAL(triggered()),this,SLOT(Play()));
-    connect(bar->addMenu("Game")->addAction("Start"),SIGNAL(triggered()),this,SLOT(Start()));
+    connect(bar->addAction("Connect"),SIGNAL(triggered()),this,SLOT(Play()));
+    connect(bar->addAction("Start"),SIGNAL(triggered()),this,SLOT(Start()));
+    connect(bar->addAction("Stop"),SIGNAL(triggered()),this,SLOT(Stop()));
     view->setWindowTitle("Stratego");
     view->setScene(scene);
     view->setMinimumSize(650,650);
@@ -65,6 +66,26 @@ void MainWindow::Play() {
     Verkenner=8;
     Spion=1;
     Vaandel=1;
+}
+void MainWindow::pownClicked(double x , double y)
+{
+    posx = int(x/58);
+    posy = int(y/58);
+    if(play==0)
+    {
+        addPown(x,y);
+    }
+    if(play==1)
+    {
+        if(from==true){
+            emit(send(new QByteArray("FROM/" + QByteArray::number(int(posx)) + "/" + QByteArray::number(int(posy)))));
+            from = false;
+        }
+        else {
+            emit(send(new QByteArray("TO/" + QByteArray::number(int(posx)) + "/" + QByteArray::number(int(y)) + "/" + QByteArray::number(c->spelveld[int(posx)][int(posy)]))));
+            from=true;
+        }
+    }
 }
 
 void MainWindow::addPown(double x, double y) {
@@ -329,5 +350,17 @@ void MainWindow::Start()
         play = 1;
         emit send(new QByteArray("START"));
     }
+    play=1;
     emit send(new QByteArray("START"));
+}
+void MainWindow::Stop()
+{
+    qDebug("Game Stopped");
+    if(play==1)
+    {
+        play = 0;
+        emit send(new QByteArray("STOP"));
+    }
+    play=0;
+    emit send(new QByteArray("STOP"));
 }

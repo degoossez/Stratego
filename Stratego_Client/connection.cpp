@@ -61,7 +61,7 @@ QString connection::Broadcast() {
     return "";
 }
 void connection::write_data(QByteArray *buffer){
-    buffer->rightJustified(56,' ',true);
+    //buffer->rightJustified(56,' ',true);
     socket->write(*buffer);
     socket->flush();
 }
@@ -94,5 +94,16 @@ void connection::incommingData(){
         qDebug() << "incomming data: START";
         gameStatus=true;
         emit playfieldChanged();
+    }
+    if(input == "STOP")
+    {
+        qDebug() << "incomming data: STOP";
+        gameStatus=false;
+        QDialog *dialog = new QDialog();
+        QVBoxLayout *layout = new QVBoxLayout(dialog);
+        QLabel *label = new QLabel();
+        layout->addWidget(label);
+        label->setText("Opponent stopped, you won!");
+        dialog->show();
     }
 }
