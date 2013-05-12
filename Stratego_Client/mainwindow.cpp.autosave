@@ -81,24 +81,71 @@ void MainWindow::pownClicked(double x , double y)
         if(from==true){
             c->x=int(posx);
             c->y=int(posy);
-            if(c->spelveld[int(posx)][int(posy)] !=20 && c->spelveld[int(posx)][int(posy)]!=15 && c->spelveld[int(posx)][int(posy)] != 11){
-            emit(send(new QByteArray("FROM/" + QByteArray::number(int(posx)) + "/" + QByteArray::number(int(posy)) + "/" + QByteArray::number(c->spelveld[int(posx)][int(posy)]))));
-            from = false;
-            //QString debug = QByteArray("FROM/" + QByteArray::number(int(posx)) + "/" + QByteArray::number(int(posy)) + "/" + QByteArray::number(c->spelveld[int(posx)][int(posy)]));
-            //qDebug() << debug;
+            if(c->spelveld[int(posx)][int(posy)] !=20 && c->spelveld[int(posx)][int(posy)]!=15 && c->spelveld[int(posx)][int(posy)] != 11 && c->spelveld[int(posx)][int(posy)] != 0){
+                emit(send(new QByteArray("FROM/" + QByteArray::number(int(posx)) + "/" + QByteArray::number(int(posy)) + "/" + QByteArray::number(c->spelveld[int(posx)][int(posy)]))));
+                from = false;
             }
         }
-        else {
+        else
+        {
             c->x2=int(posx);
             c->y2=int(posy);
-            if(c->spelveld[int(posx)][int(posy)]==20 || c->spelveld[int(posx)][int(posy)]==15){
-            emit(send(new QByteArray("TO/" + QByteArray::number(int(posx)) + "/" + QByteArray::number(int(posy)))));
-            from=true;
-            //QString debug2 = QByteArray("TO/" + QByteArray::number(int(posx)) + "/" + QByteArray::number(int(posy)));
-            //qDebug() << debug2;
-
+            if(isMoveValid() && c->spelveld[int(posx)][int(posy)]==20 || c->spelveld[int(posx)][int(posy)]==15)
+            {
+                emit(send(new QByteArray("TO/" + QByteArray::number(int(posx)) + "/" + QByteArray::number(int(posy)))));
+            }
+            else
+            {
+                from=true;
+                QMessageBox msgBox;
+                msgBox.setText("Invalid move!");
+                msgBox.exec();
             }
         }
+    }
+}
+bool MainWindow::isMoveValid()
+{
+    if(c->spelveld[int(posx)][int(posy)] !=3)
+    {
+        if((c->x-c->x2)==1 || (c->x-c->x2)==-1 || (c->x-c->x2)==0)
+        {
+
+        }
+        if((c->x-c->x2)==1 || (c->x-c->x2)==-1)
+        {
+            if((c->y-c->y2)==1)
+            {
+                return false;
+            }
+            if((c->y-c->y2)==-1)
+            {
+                return false;
+            }
+            if((c->y-c->y2)==0)
+            {
+                return true;
+            }
+        }
+        if((c->x-c->x2)==0)
+        {
+            if((c->y-c->y2)==1)
+            {
+                return true;
+            }
+            if((c->y-c->y2)==-1)
+            {
+                return true;
+            }
+            if((c->y-c->y2)==0)
+            {
+                return false;
+            }
+        }
+    }
+    else
+    {
+        //algoritme voor verkenner maken
     }
 }
 void MainWindow::Start()
@@ -385,3 +432,4 @@ void MainWindow::draw()
         view->update();
     }
 }
+

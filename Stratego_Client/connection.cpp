@@ -114,8 +114,31 @@ void connection::incommingData(){
         dialog->show();
     }
     QStringList list = input.split("/");
-    if(list.at(0)=="DRAW")
+    if(list.at(0)=="WINNER")
     {
+        QMessageBox msgBox;
+        msgBox.setText("You won!");
+        msgBox.exec();
+        spelveld[x][y]=15;
+        spelveld[x2][y2]=list.at(1).toInt();
+        socket->close();
+    }
+    else if(list.at(0)=="LOST")
+    {
+        spelveld[defx2][defy2]=15;
+        spelveld[defx][defy]=20;
+        QMessageBox msgBox;
+        msgBox.setText("You Lost!");
+        msgBox.exec();
+        socket->close();
+    }
+    else if(list.at(0)=="DRAW")
+    {
+        QMessageBox msgBox;
+        QString output;
+        output = "It was a draw against " + list.at(1);
+        msgBox.setText(output);
+        msgBox.exec();
         if(attacker==true)
         {
             qDebug("Attack==true");
@@ -134,6 +157,11 @@ void connection::incommingData(){
     }
     else if(list.at(0)=="WON")
     {
+        QMessageBox msgBox;
+        QString output;
+        output = "It was a win against " + list.at(1);
+        msgBox.setText(output);
+        msgBox.exec();
         if(attacker==true)
         {
             qDebug("Attack==true");
@@ -141,7 +169,7 @@ void connection::incommingData(){
             spelveld[x2][y2]=list.at(1).toInt();
             attacker=false;
         }
-        else //nog aanpassen
+        else
         {
             qDebug("Attack==false");
             spelveld[defx2][defy2]=15;
@@ -151,6 +179,11 @@ void connection::incommingData(){
     }
     else if(list.at(0)=="LOST")
     {
+        QMessageBox msgBox;
+        QString output;
+        output = "It was a defeat against " + list.at(1);
+        msgBox.setText(output);
+        msgBox.exec();
         if(attacker==true)
         {
             qDebug("Attack==true");
