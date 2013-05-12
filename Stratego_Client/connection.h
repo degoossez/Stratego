@@ -12,6 +12,8 @@
 #include <QDialog>
 #include <QVBoxLayout>
 #include <QLabel>
+#include <QStringList>
+
 class QTcpSocket;
 
 class connection : public QObject
@@ -22,8 +24,10 @@ public:
     void connectToServer();
     int speler,spel;
     QTcpSocket* socket;
-    bool ableToWrite,gameStatus;
+    bool ableToWrite,gameStatus,attacker;
     int spelveld[10][10];
+    int x,y,x2,y2;
+    int defx,defy,defx2,defy2;
 public slots:
 private slots:
     void on_connected();

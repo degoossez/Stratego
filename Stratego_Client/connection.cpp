@@ -48,6 +48,14 @@ QString connection::Broadcast() {
                 udpSocketGet.readDatagram(receive_datagram.data(),receive_datagram.size(),&server,&serverPort);
                 qDebug("[INFO] PLAYER DATA: \'%s\'\n",receive_datagram.data());
                 speler = receive_datagram.toInt();
+                if(speler==1)
+                {
+                    attacker=true;
+                }
+                else
+                {
+                    attacker=false;
+                }
                 receive_datagram.resize(udpSocketGet.pendingDatagramSize());
                 udpSocketGet.readDatagram(receive_datagram.data(),receive_datagram.size(),&server,&serverPort);
                 qDebug("[INFO] GAME DATA: \'%s\'\n",receive_datagram.data());
@@ -88,16 +96,15 @@ void connection::on_disconnected(){
     ableToWrite = false;
 }
 void connection::incommingData(){
-    QString input = socket->readLine();
+    QString input = socket->readAll();
+    qDebug() << input;
     if(input == "START")
     {
-        qDebug() << "incomming data: START";
         gameStatus=true;
         emit playfieldChanged();
     }
-    if(input == "STOP")
+    else if(input == "STOP")
     {
-        qDebug() << "incomming data: STOP";
         gameStatus=false;
         QDialog *dialog = new QDialog();
         QVBoxLayout *layout = new QVBoxLayout(dialog);
@@ -105,5 +112,88 @@ void connection::incommingData(){
         layout->addWidget(label);
         label->setText("Opponent stopped, you won!");
         dialog->show();
+    }
+    QStringList list = input.split("/");
+    if(list.at(0)=="DRAW")
+    {
+        if(attacker==true)
+        {
+            qDebug("Attack==true");
+            spelveld[x][y]=15;
+            spelveld[x2][y2]=15;
+            attacker=false;
+        }
+        else
+        {
+            qDebug("Attack==false");
+            spelveld[defx2][defy2]=15;
+            spelveld[defx][defy]=15;
+            attacker=true;
+        }
+        emit playfieldChanged();
+    }
+    else if(list.at(0)=="WON")
+    {
+        if(attacker==true)
+        {
+            qDebug("Attack==true");
+            spelveld[x][y]=15;
+            spelveld[x2][y2]=list.at(1).toInt();
+            attacker=false;
+        }
+        else //nog aanpassen
+        {
+            qDebug("Attack==false");
+            spelveld[defx2][defy2]=15;
+            attacker=true;
+        }
+        emit playfieldChanged();
+    }
+    else if(list.at(0)=="LOST")
+    {
+        if(attacker==true)
+        {
+            qDebug("Attack==true");
+            spelveld[x][y]=15;
+            attacker=false;
+        }
+        else
+        {
+            qDebug("Attack==false");
+            spelveld[defx2][defy2]=15;
+            spelveld[defx][defy]=20;
+            attacker=true;
+        }
+        emit playfieldChanged();
+    }
+    else if(list.at(0)=="MOVE")
+    {
+        if(attacker==true)
+        {
+            qDebug("Attack==true");
+            spelveld[x][y]=15;
+            spelveld[x2][y2]=list.at(1).toInt();
+            attacker=false;
+        }
+        else
+        {
+            qDebug("Attack==false");
+            spelveld[defx2][defy2]=15;
+            spelveld[defx][defy]=20;
+            attacker=true;
+        }
+        emit playfieldChanged();
+    }
+    else if(list.at(0)=="POWN")
+    {
+        defx=list.at(1).toInt();
+        defy=list.at(2).toInt();
+        write_data(new QByteArray("AT/" + QByteArray::number(spelveld[defx][defy])));
+        qDebug() << QByteArray("AT/" + QByteArray::number(spelveld[defx][defy]));
+    }
+    else if(list.at(0)=="FROM")
+    {
+        defx2=list.at(1).toInt();
+        defy2=list.at(2).toInt();
     }
 }

@@ -21,11 +21,13 @@ class Server : public QObject
 
 public:
     Server(QObject *parent = 0);
-    int spelers,spel;
+    int spelers,spel,pown;
     QTcpServer *server;
     QList<QTcpSocket*> socketList;
     QList<int> spelList;
     QList<bool> toestandList;
+    QList<int> pownList;
+    QList<QString> posList;
     QSignalMapper *signalMapper;
 public slots:
     void processGameData(int spelerId);

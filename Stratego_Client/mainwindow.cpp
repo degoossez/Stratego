@@ -75,17 +75,52 @@ void MainWindow::pownClicked(double x , double y)
     {
         addPown(x,y);
     }
-    if(play==1)
+    if(play==1 && c->attacker==true)
     {
         if(from==true){
-            emit(send(new QByteArray("FROM/" + QByteArray::number(int(posx)) + "/" + QByteArray::number(int(posy)))));
+            c->x=int(posx);
+            c->y=int(posy);
+            if(c->spelveld[int(posx)][int(posy)] !=20 && c->spelveld[int(posx)][int(posy)]!=15 && c->spelveld[int(posx)][int(posy)] != 11){
+            emit(send(new QByteArray("FROM/" + QByteArray::number(int(posx)) + "/" + QByteArray::number(int(posy)) + "/" + QByteArray::number(c->spelveld[int(posx)][int(posy)]))));
             from = false;
+            QString debug = QByteArray("FROM/" + QByteArray::number(int(posx)) + "/" + QByteArray::number(int(posy)) + "/" + QByteArray::number(c->spelveld[int(posx)][int(posy)]));
+            qDebug() << debug;
+            }
         }
         else {
-            emit(send(new QByteArray("TO/" + QByteArray::number(int(posx)) + "/" + QByteArray::number(int(y)) + "/" + QByteArray::number(c->spelveld[int(posx)][int(posy)]))));
+            c->x2=int(posx);
+            c->y2=int(posy);
+            if(c->spelveld[int(posx)][int(posy)]==20 || c->spelveld[int(posx)][int(posy)]==15){
+            emit(send(new QByteArray("TO/" + QByteArray::number(int(posx)) + "/" + QByteArray::number(int(posy)))));
             from=true;
+            QString debug2 = QByteArray("TO/" + QByteArray::number(int(posx)) + "/" + QByteArray::number(int(posy)));
+            qDebug() << debug2;
+
+            }
         }
     }
+}
+void MainWindow::Start()
+{
+    qDebug("Game Started");
+    if(play == 0 && Bom==0 && Maarschalk==0 && Generaal==0 && Kolonel==0 && Majoor==0 && Kapitein==0 && Luitenant==0 && Sergeant==0 && Mineur==0 && Verkenner==0 && Spion==0 && Vaandel==0)
+    {
+        play = 1;
+        emit send(new QByteArray("START"));
+    }
+    play = 1;
+    emit send(new QByteArray("START"));
+}
+void MainWindow::Stop()
+{
+    qDebug("Game Stopped");
+    if(play==1)
+    {
+        play = 0;
+        emit send(new QByteArray("STOP"));
+    }
+    play = 0;
+    emit send(new QByteArray("STOP"));
 }
 
 void MainWindow::addPown(double x, double y) {
@@ -230,7 +265,7 @@ void MainWindow::drawGeneraal()
     c->spelveld[int(posx)][int(posy)] = 9;
     x=posx;
     y=posy;
-    type=8;
+    type=9;
     draw();
 }
 void MainWindow::drawKolonel()
@@ -239,7 +274,7 @@ void MainWindow::drawKolonel()
     c->spelveld[int(posx)][int(posy)] = 8;
     x=posx;
     y=posy;
-    type=9;
+    type=8;
     draw();
 }
 void MainWindow::drawMajoor()
@@ -316,6 +351,13 @@ void MainWindow::drawVaandel()
 }
 void MainWindow::redrawField()
 {
+    scene->clear();
+    QPixmap pixmap = QPixmap::fromImage(QImage("/home/dries/School/computernetwerken/StrategoGame/Stratego_Client/Classicboard.jpg"));
+    QGraphicsPixmapItem *item =new QGraphicsPixmapItem(pixmap);
+    item->setPixmap(pixmap);
+    item->setScale(2);
+    item->setPos(0,0);
+    scene->addItem(item);
     qDebug("Redrawfield");
     for(x=0;x<10;x++)
     {
@@ -341,26 +383,4 @@ void MainWindow::draw()
         view->setScene(scene);
         view->update();
     }
-}
-void MainWindow::Start()
-{
-    qDebug("Game Started");
-    if(play == 0 && Bom==0 && Maarschalk==0 && Generaal==0 && Kolonel==0 && Majoor==0 && Kapitein==0 && Luitenant==0 && Sergeant==0 && Mineur==0 && Verkenner==0 && Spion==0 && Vaandel==0)
-    {
-        play = 1;
-        emit send(new QByteArray("START"));
-    }
-    play=1;
-    emit send(new QByteArray("START"));
-}
-void MainWindow::Stop()
-{
-    qDebug("Game Stopped");
-    if(play==1)
-    {
-        play = 0;
-        emit send(new QByteArray("STOP"));
-    }
-    play=0;
-    emit send(new QByteArray("STOP"));
 }

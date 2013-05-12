@@ -70,7 +70,7 @@ void Server::CreateTcp()
     else if(spelers==2)
     {
         spelerId = (spelers * spel) -1;
-        qDebug() << "spelerId2:" << spelerId;
+        qDebug() << "spelerIdAanval:" << spelerId;
     }
     QTcpSocket *tcpsock;
     tcpsock = server->nextPendingConnection();
@@ -99,7 +99,8 @@ void Server::processGameData(int spelerId) {
     qDebug() << input;
     if(input=="START")
     {
-        toestandList[spelerId] = true;
+        qDebug("START");
+        toestandList[spelerId]=true;
         if(spelerId%2==0)
         {
             if(toestandList.at(spelerId+1)==true)
@@ -119,35 +120,149 @@ void Server::processGameData(int spelerId) {
     }
     if(input=="STOP")
     {
-        toestandList[spelerId] = false;
+        qDebug("STOP");
+        toestandList[spelerId]=false;
         socketList.at(spelerId)->close();
         if(spelerId%2==0)
         {
-            toestandList[spelerId+1]=false;
+            toestandList.insert(spelerId+1,false);
             write_data(new QByteArray("STOP"),spelerId+1);
             socketList.at(spelerId+1)->close();
         }
         else
         {
-            toestandList[spelerId-1]=false;
+            toestandList.insert(spelerId-1,false);
             write_data(new QByteArray("STOP"),spelerId-1);
             socketList.at(spelerId-1)->close();
         }
 
     }
     QStringList list = input.split("/");
+    if(list.at(0)=="AT")
+    {
+        qDebug("AT");
+        int attack,spelerIdAanval;
+        if(spelerId%2==0)
+        {
+            qDebug() << "spelerId+1:" << posList.at(spelerId+1);
+             spelerIdAanval = spelerId+1;
+        }
+        else
+        {
+            qDebug() << "spelerId-1:" << posList.at(spelerId-1);
+             spelerIdAanval = spelerId-1;
+        }
+        attack=pownList.at(spelerIdAanval);
+        pown = list.at(1).toInt();
+        bool win;
+        bool draw=false;
+        if(pown==15)
+        {
+            win =false;
+            draw=false;
+        }
+        else if(attack==2 && pown==10)
+        {
+            win = true;
+        }
+        else if(attack==3 && pown==11)
+        {
+            win = true;
+        }
+        else if(attack > pown)
+        {
+            win = true;
+        }
+        else if(attack==pown)
+        {
+            draw = true;
+        }
+        if(draw==true)
+        {
+            qDebug("draw==true");
+            //defender
+            QStringList list = posList[spelerId].split("/");
+            write_data(new QByteArray("DRAW/"+QByteArray::number(attack) + "/" + QByteArray::number(list.at(0).toInt()) + "/" + QByteArray::number(list.at(1).toInt())),spelerId);
+            //attacker
+            list = posList[spelerIdAanval].split("/");
+            write_data(new QByteArray("DRAW/"+QByteArray::number(attack) + "/" + QByteArray::number(list.at(0).toInt()) + "/" + QByteArray::number(list.at(1).toInt())),spelerIdAanval);
+        }
+        else if(win==true)
+        {
+            qDebug("win==true");
+            //attacker
+            write_data(new QByteArray("WON/"+QByteArray::number(attack)),spelerIdAanval);
+            //defender
+            QStringList list = posList[spelerId].split("/");
+            write_data(new QByteArray("LOST/"+QByteArray::number(pown)+ "/" + QByteArray::number(9-list.at(0).toInt()) + "/" + QByteArray::number(9-list.at(1).toInt())),spelerId);
+        }
+        else if(win==false && draw==false) //nog aan te passen
+        {
+            qDebug("win==false draw==false");
+            //attacker
+            write_data(new QByteArray("MOVE/"+QByteArray::number(attack)),spelerIdAanval);
+            //defender
+            qDebug() << "aanvalid:" << spelerIdAanval << ":" << posList[spelerIdAanval];
+            qDebug() << "spelerId:" << spelerId << ":" << posList[spelerId];
+            QStringList list = posList[spelerIdAanval].split("/");
+            write_data(new QByteArray("MOVE/"+QByteArray::number(pown)+ "/" + QByteArray::number(list.at(0).toInt()) + "/" + QByteArray::number(list.at(1).toInt())),spelerId);
+        }
+        else if(win==false)
+        {
+            qDebug("win == false");
+            //attacker
+            QStringList list = posList[spelerIdAanval].split("/");
+            write_data(new QByteArray("LOST/"+QByteArray::number(pown)),spelerIdAanval);
+            //defender
+            write_data(new QByteArray("WON/"+QByteArray::number(attack)+ "/" + QByteArray::number(list.at(0).toInt()) + "/" + QByteArray::number(list.at(1).toInt())),spelerId);
+        }
+    }
     if(list.at(0)=="FROM")
     {
-        //ask oponent for pown
+        qDebug("FROM");
+        if(spelerId < pownList.size())
+        {
+            qDebug("ERASE");
+            pownList.removeAt(spelerId);
+            posList.removeAt(spelerId);
+        }
+        qDebug() << "aanvalid:" << spelerId;
+        int x = 9-list.at(1).toInt();
+        int y = 9-list.at(2).toInt();
+        pownList.insert(spelerId,list.at(3).toInt()); //welke pion word verzet (aanvaller)
+        posList.insert(spelerId,QString::number(x) +"/"+QString::number(y)); //van welke plaats is deze afkomstig
+        qDebug() << posList.at(spelerId);
+        if(spelerId%2==0)
+        {
+            write_data(new QByteArray("FROM/"+ QByteArray::number(x) + "/" + QByteArray::number(y)),spelerId+1);
+        }
+        else
+        {
+            write_data(new QByteArray("FROM/"+ QByteArray::number(x) + "/" + QByteArray::number(y)),spelerId-1);
+        }
     }
-    else(list.at()=="TO")
+    else if(list.at(0)=="TO")
     {
-
+        qDebug() << "posList.at(0)begin:" << posList.at(0);
+        //ask oponent for pown
+        QByteArray *from = new QByteArray("POWN/" + QByteArray::number(9-list.at(1).toInt()) + "/" + QByteArray::number(9-list.at(2).toInt()));
+        if(spelerId%2==0)
+        {
+            qDebug() << "defendidtest:" << spelerId+1;
+            write_data(from,spelerId+1);
+            posList.insert(spelerId+1,QString::number(9-list.at(1).toInt()) + "/" + QString::number(9-list.at(2).toInt()));
+        }
+        else
+        {
+            qDebug() << "defendidtest:" << spelerId-1;
+            write_data(from,spelerId-1);
+            posList.insert(spelerId-1,QString::number(9-list.at(1).toInt()) + "/" + QString::number(9-list.at(2).toInt()));
+        }
+        qDebug() << "posList.at(0)einde:" << posList.at(0);
+        qDebug() << "posList.at(1):" << posList.at(1);
     }
 }
 void Server::write_data(QByteArray *buffer, int spelerId){
-    qDebug() << "sending";
-        buffer->rightJustified(56,' ',true);
         socketList.at(spelerId)->write(*buffer);
         socketList.at(spelerId)->flush();
 }
