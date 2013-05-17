@@ -24,7 +24,7 @@ public:
     void connectToServer();
     int speler,spel;
     QTcpSocket* socket;
-    bool ableToWrite=false;
+    bool ableToWrite;
     bool gameStatus,attacker;
     int spelveld[10][10];
     int x,y,x2,y2;

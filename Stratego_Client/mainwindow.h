@@ -46,9 +46,9 @@ public:
     MyGraphicsScene *scene;
     double posx,posy;
     int x,y,type;
-    int play=0;
+    int play;
     int Bom,Maarschalk,Generaal,Kolonel,Majoor,Kapitein,Luitenant,Sergeant,Mineur,Verkenner,Spion,Vaandel;
-    int from=true;
+    int from;
     connection *c;
 private:
     Ui::MainWindow *ui;
@@ -72,6 +72,7 @@ private slots:
     void draw();
     void Start();
     void Stop();
+    bool isMoveValid();
 signals:
     void send(QByteArray *buffer);
 };

@@ -6,6 +6,7 @@
 connection::connection(QObject *parent) :
     QObject(parent)
 {
+    ableToWrite=false;
     socket = new QTcpSocket(this);
     connect(socket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(printError(QAbstractSocket::SocketError)));
     connect(socket, SIGNAL(connected()), this, SLOT(on_connected()));
@@ -64,7 +65,18 @@ QString connection::Broadcast() {
                 qDebug("[INFO] Found STRATEGO-SERVER on %s\n",server.toString().toUtf8().constData());
                 return server.toString();
             }
-        }else qDebug("[INFO] UDP Discover TimeOut\n");
+        }
+        else
+        {
+            qDebug("[INFO] UDP Discover TimeOut\n");
+            static int timeout=0;
+            timeout++;
+            if(timeout==5)
+            {
+                qDebug("[INFO] Server is not online. Please try again later!");
+                return "";
+            }
+        }
     }
     return "";
 }
@@ -123,7 +135,7 @@ void connection::incommingData(){
         spelveld[x2][y2]=list.at(1).toInt();
         socket->close();
     }
-    else if(list.at(0)=="LOST")
+    else if(list.at(0)=="LOSER")
     {
         spelveld[defx2][defy2]=15;
         spelveld[defx][defy]=20;

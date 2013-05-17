@@ -6,19 +6,18 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    play=0;
+    from=true;
     ui->setupUi(this);
     layout = new QVBoxLayout(this->centralWidget());
     view = new QGraphicsView(this);
     scene = new MyGraphicsScene(view);
     connect(scene,SIGNAL(mouseclicked(double,double)),this,SLOT(pownClicked(double,double)));
-    QPixmap pixmap = QPixmap::fromImage(QImage("/home/dries/School/computernetwerken/StrategoGame/Stratego_Client/Classicboard.jpg"));
+    QPixmap pixmap = QPixmap::fromImage(QImage(":/Classicboard.jpg"));
     QGraphicsPixmapItem *item =new QGraphicsPixmapItem(pixmap);
     item->setPixmap(pixmap);
     item->setScale(2);
     item->setPos(0,0);
-    /*QGraphicsEllipseItem *itemElipse;
-    itemElipse = new QGraphicsEllipseItem(0,0,60,60,item);
-    itemElipse->setBrush(Qt::yellow);*/
     scene->addItem(item);
     QMenuBar *bar = new QMenuBar(view);
     connect(bar->addAction("Connect"),SIGNAL(triggered()),this,SLOT(Play()));
@@ -52,7 +51,6 @@ void MainWindow::Play() {
             }
         }
     }
-    //c->spelveld[8][8]=10;
     connect(c,SIGNAL(playfieldChanged()),this,SLOT(redrawField()));
     connect(this,SIGNAL(send(QByteArray*)),c,SLOT(write_data(QByteArray*)));
     Bom=6;
@@ -72,34 +70,138 @@ void MainWindow::pownClicked(double x , double y)
 {
     posx = int(x/58);
     posy = int(y/58);
-    if(play==0)
+    if(x>=0 && x<=575 && y>=0 && y<= 570)
     {
-        addPown(x,y);
-    }
-    if(play==1 && c->attacker==true)
-    {
-        if(from==true){
-            c->x=int(posx);
-            c->y=int(posy);
-            if(c->spelveld[int(posx)][int(posy)] !=20 && c->spelveld[int(posx)][int(posy)]!=15 && c->spelveld[int(posx)][int(posy)] != 11){
-            emit(send(new QByteArray("FROM/" + QByteArray::number(int(posx)) + "/" + QByteArray::number(int(posy)) + "/" + QByteArray::number(c->spelveld[int(posx)][int(posy)]))));
-            from = false;
-            //QString debug = QByteArray("FROM/" + QByteArray::number(int(posx)) + "/" + QByteArray::number(int(posy)) + "/" + QByteArray::number(c->spelveld[int(posx)][int(posy)]));
-            //qDebug() << debug;
+        if(play==0)
+        {
+            if(c->spelveld[int(posx)][int(posy)] == 15 && posy>5)
+            {
+                addPown(x,y);
             }
         }
-        else {
-            c->x2=int(posx);
-            c->y2=int(posy);
-            if(c->spelveld[int(posx)][int(posy)]==20 || c->spelveld[int(posx)][int(posy)]==15){
-            emit(send(new QByteArray("TO/" + QByteArray::number(int(posx)) + "/" + QByteArray::number(int(posy)))));
-            from=true;
-            //QString debug2 = QByteArray("TO/" + QByteArray::number(int(posx)) + "/" + QByteArray::number(int(posy)));
-            //qDebug() << debug2;
-
+        if(play==1 && c->attacker==true)
+        {
+            if(from==true){
+                c->x=int(posx);
+                c->y=int(posy);
+                if(c->spelveld[int(posx)][int(posy)] !=20 && c->spelveld[int(posx)][int(posy)]!=15 && c->spelveld[int(posx)][int(posy)] != 11 && c->spelveld[int(posx)][int(posy)] != 0){
+                    emit(send(new QByteArray("FROM/" + QByteArray::number(int(posx)) + "/" + QByteArray::number(int(posy)) + "/" + QByteArray::number(c->spelveld[int(posx)][int(posy)]))));
+                    from = false;
+                }
+            }
+            else
+            {
+                c->x2=int(posx);
+                c->y2=int(posy);
+                bool move = isMoveValid();
+                if(move && (c->spelveld[int(posx)][int(posy)]==20 || c->spelveld[int(posx)][int(posy)]==15))
+                {
+                    from=true;
+                    emit(send(new QByteArray("TO/" + QByteArray::number(int(posx)) + "/" + QByteArray::number(int(posy)))));
+                }
+                else
+                {
+                    from=true;
+                    QMessageBox msgBox;
+                    msgBox.setText("Invalid move!");
+                    msgBox.exec();
+                }
             }
         }
     }
+}
+bool MainWindow::isMoveValid()
+{
+    if(c->spelveld[int(c->x)][int(c->y)] !=2)
+    {
+        if((c->x-c->x2)==1 || (c->x-c->x2)==-1)
+        {
+            if((c->y-c->y2)==1)
+            {
+                return false;
+            }
+            if((c->y-c->y2)==-1)
+            {
+                return false;
+            }
+            if((c->y-c->y2)==0)
+            {
+                return true;
+            }
+        }
+        if((c->x-c->x2)==0)
+        {
+            if((c->y-c->y2)==1)
+            {
+                return true;
+            }
+            if((c->y-c->y2)==-1)
+            {
+                return true;
+            }
+            if((c->y-c->y2)==0)
+            {
+                return false;
+            }
+        }
+    }
+    else
+    {
+        if((c->x-c->x2)==0)
+        {
+            int dif = c->y-c->y2;
+            qDebug() << dif;
+            if(dif>0)
+            {
+                for(int i=1;i<dif;i++)
+                {
+                    if(c->spelveld[c->x][c->y+i]!=15)
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            if(dif<0)
+            {
+                for(int i=1;i<=dif;i++)
+                {
+                    if(c->spelveld[c->x][c->y-i]!=15)
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+        if((c->y-c->y2)==0)
+        {
+            int dif = c->x-c->x2;
+            if(dif>0)
+            {
+                for(int i=1;i<dif;i++)
+                {
+                    if(c->spelveld[c->x+i][c->y]!=15)
+                    {
+                        return false;
+                    }
+                }
+                return true;
+             }
+            if(dif<0)
+            {
+                for(int i=1;i<dif;i++)
+                {
+                    if(c->spelveld[c->x-i][c->y]!=15)
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+    }
+    return false;
 }
 void MainWindow::Start()
 {
@@ -109,8 +211,6 @@ void MainWindow::Start()
         play = 1;
         emit send(new QByteArray("START"));
     }
-    play = 1;
-    emit send(new QByteArray("START"));
 }
 void MainWindow::Stop()
 {
@@ -120,8 +220,6 @@ void MainWindow::Stop()
         play = 0;
         emit send(new QByteArray("STOP"));
     }
-    play = 0;
-    emit send(new QByteArray("STOP"));
 }
 
 void MainWindow::addPown(double x, double y) {
@@ -353,7 +451,7 @@ void MainWindow::drawVaandel()
 void MainWindow::redrawField()
 {
     scene->clear();
-    QPixmap pixmap = QPixmap::fromImage(QImage("/home/dries/School/computernetwerken/StrategoGame/Stratego_Client/Classicboard.jpg"));
+    QPixmap pixmap = QPixmap::fromImage(QImage("Classicboard.jpg"));
     QGraphicsPixmapItem *item =new QGraphicsPixmapItem(pixmap);
     item->setPixmap(pixmap);
     item->setScale(2);
@@ -375,7 +473,7 @@ void MainWindow::draw()
     {
         int xpos = x*58;
         int ypos = y*58;
-        QPixmap pixmap = QPixmap::fromImage(QImage("/home/dries/School/computernetwerken/StrategoGame/Stratego_Client/" + QString::number(type) + ".jpg"));
+        QPixmap pixmap = QPixmap::fromImage(QImage(QString::number(type) + ".jpg"));
         QGraphicsPixmapItem *item =new QGraphicsPixmapItem(pixmap);
         item->setScale(2.5);
         item->setPixmap(pixmap);
@@ -385,3 +483,4 @@ void MainWindow::draw()
         view->update();
     }
 }
+

@@ -23,9 +23,6 @@ Server::Server(QObject *parent) :
     signalMapper = new QSignalMapper(this);
     connect(signalMapper,SIGNAL(mapped(int)),this,SLOT(processGameData(int)));
 
-    /*tcpSocket = new QTcpSocket(this);
-    tcpSocket->bind(41000, QTcpSocket::ShareAddress);
-    connect(tcpSocket, SIGNAL(readyRead()),this,SLOT(processGameData())); */
 }
 void Server::processPendingDatagrams()
 {
@@ -74,12 +71,8 @@ void Server::CreateTcp()
     }
     QTcpSocket *tcpsock;
     tcpsock = server->nextPendingConnection();
-    //tcpsock->waitForReadyRead(5000);
     signalMapper->setMapping(tcpsock, spelerId);
     connect(tcpsock, SIGNAL(readyRead()),signalMapper,SLOT(map()));
-    //tcpsock->waitForBytesWritten(3000);
-    //qDebug() << tcpsock->readAll();
-    //tcpsock->write("");
     socketList.append(tcpsock);
     spelList.append(spel);
     toestandList.append(false);
@@ -191,7 +184,7 @@ void Server::processGameData(int spelerId) {
             //attacker
             write_data(new QByteArray("WINNER/"+QByteArray::number(attack)),spelerIdAanval);
             //defender
-            write_data(new QByteArray("LOST/"+QByteArray::number(pown)),spelerId);
+            write_data(new QByteArray("LOSER/"+QByteArray::number(pown)),spelerId);
             toestandList[spelerId]=false;
             socketList.at(spelerId)->close();
             if(spelerId%2==0)
@@ -217,9 +210,9 @@ void Server::processGameData(int spelerId) {
         {
             qDebug("win==true");
             //attacker
-            write_data(new QByteArray("WON/"+QByteArray::number(attack)),spelerIdAanval);
+            write_data(new QByteArray("WON/"+QByteArray::number(pown)),spelerIdAanval);
             //defender
-            write_data(new QByteArray("LOST/"+QByteArray::number(pown)),spelerId);
+            write_data(new QByteArray("LOST/"+QByteArray::number(attack)),spelerId);
         }
         else if(win==false && draw==false && loose==false) //nog aan te passen
         {
