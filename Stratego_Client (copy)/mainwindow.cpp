@@ -27,8 +27,10 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(bar->addAction("Stop"),SIGNAL(triggered()),this,SLOT(Stop()));
     this->setWindowTitle("Stratego");
     scene->setSceneRect(0,0,570,570);
+    //view->fitInView(scene->sceneRect(), Qt::KeepAspectRatio);
     view->setScene(scene);
     this->setMinimumSize(700,700);
+    //this->setMaximumSize(700,700);
     layout->addWidget(view);
 }
 MainWindow::~MainWindow()
@@ -37,40 +39,32 @@ MainWindow::~MainWindow()
 }
 void MainWindow::onMsgChanged(QString info)
 {
-    qDebug() << ChatMessages->text() << info;
-    QString tekst = ChatMessages->text() + info;
-    ChatMessages->setText(tekst);
-}
-void MainWindow::onLblChanged(QString info)
-{
-    label->setText(label->text() + info);
-}
-void MainWindow::sendChatData()
-{
-    c->Data = ChatInput->toPlainText().toUtf8();
-    emit c->sendChatData();
-    ChatInput->clear();
+    ChatMessages->setText(ChatMessages->text() + info);
+    qDebug() << "onmsgchanged" << info;
 }
 
 void MainWindow::Play() {
+    qDebugdfs("test new connection");
     c = new connection(this);
 
-    SA = new QScrollArea(this);
+    qDebug("testadden");
+    SA = new QScrollArea();
     label = new QLabel(SA);
-    Chat = new QScrollArea(this);
+    Chat = new QScrollArea;
     ChatMessages = new QLabel(Chat);
-    Commit = new QPushButton(this);
-    ChatInput = new QTextEdit(this);
-    connect(Commit,SIGNAL(clicked()),this,SLOT(sendChatData()));
+    Commit = new QPushButton;
+    ChatInput = new QTextEdit;
+    connect(Commit,SIGNAL(clicked()),c,SLOT(sendChatData());
+
+    qDebug("TestLayout");
     layout->addWidget(SA,Qt::AlignBottom);
     layout2 = new QVBoxLayout();
     Hlayout->addLayout(layout2,Qt::AlignRight);
     layout2->addWidget(Chat,Qt::AlignRight);
     layout2->addWidget(ChatInput,Qt::AlignRight);
-    Commit->setText("Send");
+    c->Commit->setText("Send");
     layout2->addWidget(Commit,Qt::AlignRight);
     connect(c,SIGNAL(msgChanged(QString)),this,SLOT(onMsgChanged(QString)));
-    connect(c,SIGNAL(lblChanged(QString)),this,SLOT(onLblChanged(QString)));
     c->connectToServer();
     for(int i=0;i<10;i++)
     {
@@ -137,7 +131,7 @@ void MainWindow::pownClicked(double x , double y)
                 else
                 {
                     from=true;
-                    label->setText(label->text() + "Invalid move!\n");
+                    c->Label->setText(c->Label->text() + "Invalid move!\n");
                 }
             }
         }
@@ -237,7 +231,7 @@ bool MainWindow::isMoveValid()
 }
 void MainWindow::Start()
 {
-    label->setText(label->text() + "Game Started/n");
+    c->Label->setText(c->Label->text() + "Game Started/n");
     if(play == 0 && Bom==0 && Maarschalk==0 && Generaal==0 && Kolonel==0 && Majoor==0 && Kapitein==0 && Luitenant==0 && Sergeant==0 && Mineur==0 && Verkenner==0 && Spion==0 && Vaandel==0)
     {
         play = 1;
@@ -248,7 +242,7 @@ void MainWindow::Start()
 }
 void MainWindow::Stop()
 {
-    label->setText(label->text() +"Game Stopped\n");
+    c->Label->setText(c->Label->text() +"Game Stopped\n");
     if(play==1)
     {
         play = 0;

@@ -34,7 +34,7 @@ public:
     int spelveld[10][10];
     int x,y,x2,y2;
     int defx,defy,defx2,defy2;
-    QString Data;
+
 public slots:
 private slots:
     void on_connected();
@@ -43,12 +43,10 @@ private slots:
     void incommingData();
     void write_data(QByteArray *buffer);
     void chatData();
-public slots:
     void sendChatData();
 signals:
     void playfieldChanged();
     void msgChanged(QString info);
-    void lblChanged(QString info);
 private:
     QString Broadcast();
 

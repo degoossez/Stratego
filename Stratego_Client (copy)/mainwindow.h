@@ -82,8 +82,6 @@ private slots:
     void Stop();
     bool isMoveValid();
     void onMsgChanged(QString info);
-    void onLblChanged(QString info);
-    void sendChatData();
 signals:
     void send(QByteArray *buffer);
 };

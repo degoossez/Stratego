@@ -29,29 +29,30 @@ void Server::processPendingDatagrams()
     while (udpSocket->hasPendingDatagrams()) {
         QByteArray datagram;
         QHostAddress SenderAdress;
+        QString Data;
         datagram.resize(udpSocket->pendingDatagramSize());
         udpSocket->readDatagram(datagram.data(), datagram.size(),&SenderAdress);
-        //statusLabel->setText(tr("Received datagram: \"%1\"").arg(datagram.data()));
-        if(spelers<=2)
+        Data = QString::fromUtf8(datagram.data());
+        if(Data == "DISCOVER-STRATEGO-SERVER")
         {
-            if(QString::fromUtf8(datagram.data()) == "DISCOVER-STRATEGO-SERVER")
+            if(spelers<=2)
             {
-                QByteArray send_datagram = "DISCOVERED-STRATEGO-SERVER";
+                    QByteArray send_datagram = "DISCOVERED-STRATEGO-SERVER";
+                    udpSocket->writeDatagram(send_datagram,SenderAdress,6666);
+                    //speler nummer
+                    send_datagram = (QString::number(spelers)).toUtf8();
+                    udpSocket->writeDatagram(send_datagram,SenderAdress,6666);
+                    //game nummer
+                    send_datagram = (QString::number(spel)).toUtf8();
+                    udpSocket->writeDatagram(send_datagram,SenderAdress,6666);
+            }
+            else
+            {
+                QByteArray send_datagram = "SERVER-IS-FULL";
                 udpSocket->writeDatagram(send_datagram,SenderAdress,6666);
-                //speler nummer
-                send_datagram = (QString::number(spelers)).toUtf8();
-                udpSocket->writeDatagram(send_datagram,SenderAdress,6666);
-                //game nummer
-                send_datagram = (QString::number(spel)).toUtf8();
-                udpSocket->writeDatagram(send_datagram,SenderAdress,6666);
-                //CreateTcp(spel);
             }
         }
-        else
-        {
-            QByteArray send_datagram = "SERVER-IS-FULL";
-            udpSocket->writeDatagram(send_datagram,SenderAdress,6666);
-        }
+        qDebug("SenderAdress");
         qDebug() << SenderAdress;
 
     }
@@ -92,35 +93,39 @@ void Server::processGameData(int spelerId) {
     qDebug() << input;
     if(input=="START")
     {
-        qDebug("START");
         toestandList[spelerId]=true;
         if(spelerId%2==0)
         {
-            if(toestandList.at(spelerId+1)==true)
+            if(toestandList.size() > spelerId+1)
             {
-                write_data(new QByteArray("START"),spelerId);
-                write_data(new QByteArray("START"),spelerId+1);
+                if(toestandList.at(spelerId+1)==true)
+                {
+                    write_data(new QByteArray("START/" + socketList.at(spelerId+1)->peerAddress().toString().toUtf8()),spelerId);
+                    write_data(new QByteArray("START/" + socketList.at(spelerId)->peerAddress().toString().toUtf8()),spelerId+1);
+                }
             }
         }
         else
         {
             if(toestandList.at(spelerId-1)==true)
             {
-                write_data(new QByteArray("START"),spelerId);
-                write_data(new QByteArray("START"),spelerId-1);
+                write_data(new QByteArray("START/" + socketList.at(spelerId-1)->peerAddress().toString().toUtf8()),spelerId);
+                write_data(new QByteArray("START/" + socketList.at(spelerId)->peerAddress().toString().toUtf8()),spelerId-1);
             }
         }
     }
     if(input=="STOP")
     {
-        qDebug("STOP");
         toestandList[spelerId]=false;
         socketList.at(spelerId)->close();
         if(spelerId%2==0)
         {
-            toestandList.insert(spelerId+1,false);
-            write_data(new QByteArray("STOP"),spelerId+1);
-            socketList.at(spelerId+1)->close();
+            if(toestandList.size() > spelerId+1)
+            {
+                toestandList.insert(spelerId+1,false);
+                write_data(new QByteArray("STOP"),spelerId+1);
+                socketList.at(spelerId+1)->close();
+            }
         }
         else
         {
@@ -133,7 +138,6 @@ void Server::processGameData(int spelerId) {
     QStringList list = input.split("/");
     if(list.at(0)=="AT")
     {
-        qDebug("AT");
         int attack,spelerIdAanval;
         if(spelerId%2==0)
         {
@@ -156,6 +160,7 @@ void Server::processGameData(int spelerId) {
         }
         else if(pown==0)
         {
+            qDebug("winner=true");
             winner=true;
         }
         else if(attack==2 && pown==10)
@@ -181,6 +186,7 @@ void Server::processGameData(int spelerId) {
         }
         if(winner==true)
         {
+            qDebug("WIN");
             //attacker
             write_data(new QByteArray("WINNER/"+QByteArray::number(attack)),spelerIdAanval);
             //defender
@@ -198,7 +204,7 @@ void Server::processGameData(int spelerId) {
                 socketList.at(spelerId-1)->close();
             }
         }
-        if(draw==true)
+        else if(draw==true)
         {
             qDebug("draw==true");
             //defender
@@ -233,12 +239,9 @@ void Server::processGameData(int spelerId) {
     }
     if(list.at(0)=="FROM")
     {
-        qDebug("FROM");
         if(spelerId < pownList.size())
         {
-            qDebug("ERASE");
             pownList.removeAt(spelerId);
-            //posList.removeAt(spelerId);
         }
         int x = 9-list.at(1).toInt();
         int y = 9-list.at(2).toInt();

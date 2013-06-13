@@ -21,16 +21,19 @@ void connection::sendChatData()
 {
     QUdpSocket udpSocketSend;
     QByteArray send_datagram;
-    qDebug("send");
-    QByteArray datagram = Data.toUtf8();
+    qDebug("send1");
+    QByteArray datagram = ChatInput->toPlainText().toUtf8();
+    ChatInput->clear();
+    qDebug("send1.1");
     send_datagram = datagram + "@@" + QByteArray::number(speler);
+    qDebug("send1.2");
     qDebug() << send_datagram;
     udpSocketSend.writeDatagram(send_datagram, opponent, 6666);
+    qDebug("send1.3");
 }
 
 void connection::chatData()
 {
-    qDebug("beginchatdata");
     QByteArray receive_datagram;
     quint16 serverPort;
     qDebug() << UDPsocket->pendingDatagramSize();
@@ -38,18 +41,18 @@ void connection::chatData()
     UDPsocket->readDatagram(receive_datagram.data(),receive_datagram.size(),&opponent,&serverPort);
     qDebug() << receive_datagram.data();
     QString input = QString::fromUtf8(receive_datagram.data());
+    qDebug() << "input: " + input;
     QStringList list = input.split("@@");
-    qDebug("-----------------------");
     if(list.at(1)!=QString::number(speler))
     {
+        qDebug("recieve6");
         QString info = "Openent: " + list.at(0) + "\n";
         emit msgChanged(info);
     }
-    qDebug("eindechatdata");
 }
 void connection::printError(QAbstractSocket::SocketError Error)
 {
-    emit lblChanged(Error + "\n");
+    Label->setText(Label->text() + Error + "\n");
 }
 
 QString connection::Broadcast() {
@@ -59,9 +62,11 @@ QString connection::Broadcast() {
     QUdpSocket udpSocketSend;
     QUdpSocket udpSocketGet;
     udpSocketSend.connectToHost(inter.broadcast(), 40000);
+    // udpSocketGet->bind(inter->ip(),667);
+    // udpSocketGet->bind(QHostAddress::Any,667)
     if(udpSocketGet.bind(udpgetport,QUdpSocket::ShareAddress))
-        emit lblChanged("[INFO] Could properly bind udpSocketget to " + QString::number(udpgetport) + "\n");
-    else emit lblChanged("[INFO] Couldn't properly bind udpSocketget to " + QString::number(udpgetport) + "\n");
+        Label->setText(Label->text() + "[INFO] Could properly bind udpSocketget to " + QString::number(udpgetport) + "\n");
+    else Label->setText(Label->text() + "[INFO] Couldn't properly bind udpSocketget to " + QString::number(udpgetport) + "\n");
     // Pakket verzenden
     QByteArray send_datagram = "DISCOVER-STRATEGO-SERVER";
     // Optimalisatie voor in de loop
@@ -77,7 +82,7 @@ QString connection::Broadcast() {
             {
                 receive_datagram.resize(udpSocketGet.pendingDatagramSize());
                 udpSocketGet.readDatagram(receive_datagram.data(),receive_datagram.size(),&server,&serverPort);
-                emit lblChanged("[INFO] PLAYER DATA: "+ QString::fromUtf8(receive_datagram.data()) +"\n");
+                Label->setText(Label->text() +"[INFO] PLAYER DATA: "+ receive_datagram.data() +"\n");
                 speler = receive_datagram.toInt();
                 if(speler==1)
                 {
@@ -89,21 +94,21 @@ QString connection::Broadcast() {
                 }
                 receive_datagram.resize(udpSocketGet.pendingDatagramSize());
                 udpSocketGet.readDatagram(receive_datagram.data(),receive_datagram.size(),&server,&serverPort);
-                emit lblChanged( "[INFO] GAME DATA: "+ QString::fromUtf8(receive_datagram.data())+"\n");
+                Label->setText(Label->text() + "[INFO] GAME DATA: "+receive_datagram.data()+"\n");
                 spel = receive_datagram.toInt();
-                emit lblChanged(" SPEL:" + QString::number(spel) + "\n");
-                emit lblChanged("[INFO] Found STRATEGO-SERVER on " + server.toString() + "\n");
+                Label->setText(Label->text() + " SPEL:" + QString::number(spel) + "\n");
+                Label->setText(Label->text() + "[INFO] Found STRATEGO-SERVER on " + server.toString().toUtf8().constData() + "\n");
                 return server.toString();
             }
         }
         else
         {
-            emit lblChanged("[INFO] UDP Discover TimeOut!\n");
+            Label->setText(Label->text() + "[INFO] UDP Discover TimeOut!\n");
             static int timeout=0;
             timeout++;
             if(timeout==5)
             {
-                emit lblChanged("[ERROR] Server is not online. Please try again later!");
+                Label->setText(Label->text() + "[ERROR] Server is not online. Please try again later!");
                 return "";
             }
         }
@@ -115,17 +120,18 @@ void connection::write_data(QByteArray *buffer){
     socket->flush();
 }
 void connection::connectToServer(){
-    emit lblChanged("[INFO] Initiating connection procedure.\n");
+    Label->setText(Label->text() + "[INFO] Initiating connection procedure.\n");
+
     socket->connectToHost(Broadcast(), 41000);
-    emit lblChanged("Connected!");
+    Label->setText(Label->text() +"Connected!");
 }
 void connection::on_connected(){
     //----------
-    emit lblChanged("[INFO] Authenticating to STRATEGO-SERVER!\n");
+    Label->setText(Label->text() + "[INFO] Authenticating to STRATEGO-SERVER!\n");
     ableToWrite = true;
 }
 void connection::on_disconnected(){
-    emit lblChanged("[ERROR] Disconnected with TCP Server!\n");
+    Label->setText(Label->text() + "[ERROR] Disconnected with TCP Server!\n");
     ableToWrite = false;
 }
 void connection::incommingData(){
@@ -146,11 +152,10 @@ void connection::incommingData(){
         layout->addWidget(label);
         label->setText("Opponent stopped, you won!");
         dialog->show();
-        socket->close();
     }
     if(list.at(0)=="WINNER")
     {
-        emit lblChanged("You won!\n");
+        Label->setText(Label->text() + "You won!\n");
         spelveld[x][y]=15;
         spelveld[x2][y2]=list.at(1).toInt();
         socket->close();
@@ -159,12 +164,12 @@ void connection::incommingData(){
     {
         spelveld[defx2][defy2]=15;
         spelveld[defx][defy]=20;
-        emit lblChanged("You lost!\n");
+        Label->setText(Label->text() + "You lost!\n");
         socket->close();
     }
     else if(list.at(0)=="DRAW")
     {
-        emit lblChanged("It was a draw against " + list.at(1)+"\n");
+        Label->setText(Label->text() + "It was a draw against " + list.at(1)+"\n");
 
         if(attacker==true)
         {
@@ -182,7 +187,7 @@ void connection::incommingData(){
     }
     else if(list.at(0)=="WON")
     {
-        emit lblChanged("It was a win against " + list.at(1)+"\n");
+        Label->setText(Label->text() + "It was a win against " + list.at(1)+"\n");
 
         if(attacker==true)
         {
@@ -199,7 +204,7 @@ void connection::incommingData(){
     }
     else if(list.at(0)=="LOST")
     {
-        emit lblChanged("It was a defeat against " + list.at(1)+"\n");
+         Label->setText(Label->text() + "It was a defeat against " + list.at(1)+"\n");
 
         if(attacker==true)
         {
